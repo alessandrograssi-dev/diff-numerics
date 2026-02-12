@@ -2,8 +2,41 @@
 
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 
 #include "Formatter.hpp"
+#include "NumericDiff.hpp"
+
+void Printer::print(const numdiff::NumericDiffResult& result,
+                    const numdiff::NumericDiffOptions& opts) {
+    if (opts.quiet) {
+        // Print nothing if files are equal, otherwise print as normal (with all options except
+        // quiet)
+        if (result.n_different_lines == 0) {
+            return;
+        } else {
+            // Print summary as in only_equal_ mode
+            os_ << "Comparing " << opts.file1 << " and " << opts.file2 << "\n";
+            os_ << "Tolerance: " << opts.tolerance << ", Threshold: " << opts.threshold << "\n";
+            os_ << "Files DIFFER: " << result.n_different_lines
+                << " lines differ, max percentage error: " << result.max_percentage_err << "%\n";
+        }
+        return;
+    }
+
+    if (opts.only_equal) {
+        os_ << "Comparing " << opts.file1 << " and " << opts.file1 << "\n";
+        os_ << "Tolerance: " << opts.tolerance << ", Threshold: " << opts.threshold << "\n";
+        if (result.n_different_lines == 0) {
+            os_ << "Files are EQUAL within tolerance.\n";
+            return;
+        } else {
+            os_ << "Files DIFFER: " << result.n_different_lines
+                << " lines differ, max percentage error: " << result.max_percentage_err << "%\n";
+        }
+        return;
+    }
+}
 
 // New helper: print tokens side by side, column by column, with color and padding
 void Printer::print_side_by_side_tokens(const std::vector<std::string>& tokens1,
@@ -41,7 +74,7 @@ void Printer::print_side_by_side_tokens(const std::vector<std::string>& tokens1,
     const char* sep = has_red ? "   |   " : "       ";
     l1 = Formatter::extract_visible_prefix(l1, static_cast<size_t>(line_length));
     l2 = Formatter::extract_visible_prefix(l2, static_cast<size_t>(line_length));
-    std::cout << l1 << sep << l2 << "\n";
+    os_ << l1 << sep << l2 << "\n";
 }
 
 // Print differences in a diff-like format
@@ -51,9 +84,9 @@ void Printer::print_diff(const std::string& output1, const std::string& output2,
     bool has_red1 = Formatter::string_is_red(output1);
     bool has_red2 = Formatter::string_is_red(output2);
     if (has_red1 || has_red2) {
-        std::cout << '\n';
-        std::cout << "< " << output1 << "\n";
-        std::cout << "> " << output2 << "\n";
-        std::cout << ">>" << errors << "\n";
+        os_ << '\n';
+        os_ << "< " << output1 << "\n";
+        os_ << "> " << output2 << "\n";
+        os_ << ">>" << errors << "\n";
     }
 }

@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
             return 0;
         }
     }
-    NumericDiffOption opts;
+    NumericDiffOptions opts;
     try {
         opts = ArgParser::parse(argc, argv);
     } catch (const std::runtime_error& e) {

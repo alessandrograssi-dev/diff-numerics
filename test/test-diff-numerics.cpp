@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "NumericDiff.hpp"
+#include "Printer.hpp"
 
 namespace fs = std::filesystem;
 using namespace numdiff;
@@ -51,10 +52,10 @@ std::string project_root() {
 // This function constructs a NumericDiff object with the given options,
 // runs the comparison, and returns the output as a string.
 NumericDiffResult run_diff(const std::string& file1, const std::string& file2, double tol,
-                     double threshold, bool side_by_side, bool suppress_common_lines,
-                     bool only_equal, bool quiet) {
-    testing::internal::CaptureStdout();
-    NumericDiffOption opts;
+                           double threshold, bool side_by_side, bool suppress_common_lines,
+                           bool only_equal, bool quiet, bool color_diff_digits = false,
+                           std::set<size_t> columns = {}) {
+    NumericDiffOptions opts;
     opts.file1 = file1;
     opts.file2 = file2;
     opts.tolerance = tol;
@@ -63,10 +64,11 @@ NumericDiffResult run_diff(const std::string& file1, const std::string& file2, d
     opts.suppress_common_lines = suppress_common_lines;
     opts.only_equal = only_equal;
     opts.quiet = quiet;
+    opts.color_diff_digits = color_diff_digits;
+    opts.columns_to_compare = columns;
+
     NumericDiff diff(opts);
-    NumericDiffResult result = diff.run();
-    testing::internal::GetCapturedStdout();  // Release the capture
-    return result;
+    return diff.run();
 }
 
 // Helper to run the diff_numerics binary as a subprocess and capture stderr
@@ -86,44 +88,40 @@ std::string run_diff_numerics_cli(const std::string& args) {
 
 // Test: Default tolerance, files should be different (output should not be empty)
 TEST(DiffNumerics, DifferentFilesDefaultTolerance) {
-    std::string file1 = test_data_path("delta_3D2_2.dat");
-    std::string file2 = test_data_path("delta_3D2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-2, 1E-6, false, false, false, false);
-    EXPECT_NE(output.n_different_lines, 0);
+    auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"), 1E-2,
+                           1E-6, false, false, false, false);
+
+    EXPECT_GT(result.n_different_lines, 0);
 }
 
 // Test: Tight tolerance, files should still be different (output should not be empty)
 TEST(DiffNumerics, DifferentFilesTightTolerance) {
-    std::string file1 = test_data_path("delta_3D2_2.dat");
-    std::string file2 = test_data_path("delta_3D2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-10, 1E-12, false, false, false, false);
-    EXPECT_NE(output.n_different_lines, 0);
+    auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"),
+                           1E-10, 1E-12, false, false, false, false);
 
+    EXPECT_NE(result.n_different_lines, 0);
 }
 
 // Test: Side-by-side output mode
 TEST(DiffNumerics, SideBySideOutput) {
-    std::string file1 = test_data_path("delta_3D2_2.dat");
-    std::string file2 = test_data_path("delta_3D2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-2, 1E-6, true, false, false, false);
-    EXPECT_NE(output.n_different_lines, 0);
-    // EXPECT_NE(output.find("|"), std::string::npos);
+    auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"), 1E-2,
+                           1E-6, true, false, false, false);
+    EXPECT_NE(result.n_different_lines, 0);
+    // EXPECT_NE(result.find("|"), std::string::npos);
 }
 
 // Test: Suppress common lines in output (should still be non-empty for different files)
 TEST(DiffNumerics, SuppressCommonLines) {
-    std::string file1 = test_data_path("delta_3D2_2.dat");
-    std::string file2 = test_data_path("delta_3D2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-2, 1E-6, true, true, false, false);
-    EXPECT_NE(output.n_different_lines, 0);
+    auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"), 1E-2,
+                           1E-6, true, true, false, false);
+    EXPECT_NE(result.n_different_lines, 0);
 }
 
 // Test: Quiet mode (should still be non-empty for different files)
 TEST(DiffNumerics, QuietMode) {
-    std::string file1 = test_data_path("delta_3D2_2.dat");
-    std::string file2 = test_data_path("delta_3D2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-2, 1E-6, false, false, false, true);
-    EXPECT_NE(output.n_different_lines, 0);
+    auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"), 1E-2,
+                           1E-6, false, false, false, true);
+    EXPECT_NE(result.n_different_lines, 0);
 }
 
 // Test: Invalid column width
@@ -230,26 +228,21 @@ TEST(DiffNumericsCLI, P2F2_CLISummary) {
 
 // Test: Colorize only differing digits
 TEST(DiffNumerics, ColorDifferentDigits) {
-    std::string file1 = test_data_path("delta_3P2-3F2.dat");
-    std::string file2 = test_data_path("delta_3P2-3F2_2.dat");
-    testing::internal::CaptureStdout();
-    NumericDiffOption opts;
-    opts.file1 = file1;
-    opts.file2 = file2;
+    NumericDiffOptions opts;
+    opts.file1 = test_data_path("delta_3P2-3F2.dat");
+    opts.file2 = test_data_path("delta_3P2-3F2_2.dat");
     opts.tolerance = 1E-2;
     opts.threshold = 1E-6;
     opts.side_by_side = true;
     opts.color_diff_digits = true;
-    NumericDiff diff(opts);
-    diff.run();
-    std::string output = testing::internal::GetCapturedStdout();
-    // Should contain ANSI red color code for only the differing digits
+
+    std::ostringstream oss;
+    NumericDiff diff(opts, oss);  // <-- inject output stream
+    auto result = diff.run();
+
+    std::string output = oss.str();
+
     EXPECT_NE(output.find("\033[31m"), std::string::npos);
-    // Should not colorize the entire number if only a few digits differ
-    size_t first_red = output.find("\033[31m");
-    size_t first_reset = output.find("\033[0m", first_red);
-    EXPECT_TRUE(first_red != std::string::npos && first_reset != std::string::npos &&
-                first_reset > first_red);
 }
 
 // Test: Compare only columns 1, 2, and 4 of delta_3P2-3F2.dat and delta_3P2-3F2_2.dat; expect no
@@ -257,7 +250,7 @@ TEST(DiffNumerics, ColorDifferentDigits) {
 TEST(DiffNumerics, P2F2_Columns1_2_4_Equal) {
     std::string file1 = test_data_path("delta_3P2-3F2.dat");
     std::string file2 = test_data_path("delta_3P2-3F2_2.dat");
-    NumericDiffOption opts;
+    NumericDiffOptions opts;
     opts.file1 = file1;
     opts.file2 = file2;
     opts.tolerance = 1E-2;

@@ -14,10 +14,11 @@
 #include <string>
 #include <vector>
 
+#include "Printer.hpp"
+
 namespace numdiff {
 
-class NumericDiffOption {
-   public:
+struct NumericDiffOptions {
     // Option values
     bool side_by_side = false;
     double tolerance = 1E-2;
@@ -30,8 +31,6 @@ class NumericDiffOption {
     bool color_diff_digits = false;
     std::set<size_t> columns_to_compare;
     std::string file1, file2;
-
-    NumericDiffOption() = default;
 };
 
 struct NumericDiffResult {
@@ -42,16 +41,19 @@ struct NumericDiffResult {
 class NumericDiff {
    public:
     NumericDiff() = delete;
-    explicit NumericDiff(const NumericDiffOption& opts);
+    explicit NumericDiff(const NumericDiffOptions& opts);
+    explicit NumericDiff(const NumericDiffOptions& opts, std::ostream& os)
+        : options_(opts), printer_(os) {};
     NumericDiffResult run();
 
    private:
-    NumericDiffOption options_;
+    NumericDiffOptions options_;
     static constexpr double big = 1.0E99;
+    Printer printer_;
 
    private:
     // Compare two lines and print results
-    std::pair<bool, double> compare_lines(const std::string& line1, const std::string& line2) const;
+    std::pair<bool, double> compare_lines(const std::string& line1, const std::string& line2);
     // Compute percentage difference between two values
     double percentage_difference(double value1, double value2) const;
     std::ifstream open_and_validate_file(const std::string& file_path) const;

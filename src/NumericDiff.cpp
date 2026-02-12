@@ -15,6 +15,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <set>
 #include <sstream>
 #include <vector>
@@ -25,9 +26,7 @@
 
 namespace numdiff {
 // Constructor: initialize from options struct
-NumericDiff::NumericDiff(const NumericDiffOption& opts) : options_(opts) {
-    TextParser::set_comment_prefix(opts.comment_prefix);
-}
+NumericDiff::NumericDiff(const NumericDiffOptions& opts) : options_(opts), printer_(std::cout) {}
 
 std::ifstream NumericDiff::open_and_validate_file(const std::string& file_path) const {
     std::ifstream fs(file_path);
@@ -51,7 +50,9 @@ NumericDiffResult NumericDiff::run() {
                 line1.clear();
                 break;
             }
-            if (options_.comment_prefix.empty() || !TextParser::line_is_comment(line1)) break;
+            if (options_.comment_prefix.empty() ||
+                !TextParser::line_is_comment(line1, options_.comment_prefix))
+                break;
         }
         // Advance file2 to next non-comment line
         while (file2_has_line) {
@@ -60,7 +61,9 @@ NumericDiffResult NumericDiff::run() {
                 line2.clear();
                 break;
             }
-            if (options_.comment_prefix.empty() || !TextParser::line_is_comment(line2)) break;
+            if (options_.comment_prefix.empty() ||
+                !TextParser::line_is_comment(line2, options_.comment_prefix))
+                break;
         }
 
         if (!file1_has_line && !file2_has_line) break;
@@ -73,13 +76,17 @@ NumericDiffResult NumericDiff::run() {
     }
 
     while (std::getline(fs1, line1)) {
-        if (!options_.comment_prefix.empty() && TextParser::line_is_comment(line1)) continue;
+        if (!options_.comment_prefix.empty() &&
+            TextParser::line_is_comment(line1, options_.comment_prefix))
+            continue;
         if (compare_lines(line1, "").second > 0.0)
             throw std::runtime_error("Error: compare line on empty line resulted wrong.");
     }
 
     while (std::getline(fs2, line2)) {
-        if (!options_.comment_prefix.empty() && TextParser::line_is_comment(line2)) continue;
+        if (!options_.comment_prefix.empty() &&
+            TextParser::line_is_comment(line2, options_.comment_prefix))
+            continue;
         if (compare_lines("", line2).second > 0.0)
             throw std::runtime_error("Error: compare line on empty line resulted wrong.");
     }
@@ -88,7 +95,7 @@ NumericDiffResult NumericDiff::run() {
 
 // Compare two lines, print differences according to options
 std::pair<bool, double> NumericDiff::compare_lines(const std::string& line1,
-                                                   const std::string& line2) const {
+                                                   const std::string& line2) {
     // Tokenize both lines
     std::vector<std::string> tokens1 = TextParser::tokenize(line1);
     std::vector<std::string> tokens2 = TextParser::tokenize(line2);
@@ -165,12 +172,12 @@ std::pair<bool, double> NumericDiff::compare_lines(const std::string& line1,
         if (options_.suppress_common_lines) {
             if (any_error) {
                 // Print tokens side by side, column by column
-                Printer::print_side_by_side_tokens(output1, output2, col_widths,
+                printer_.print_side_by_side_tokens(output1, output2, col_widths,
                                                    options_.line_length);
             }
             // else: do not print common lines
         } else {
-            Printer::print_side_by_side_tokens(output1, output2, col_widths, options_.line_length);
+            printer_.print_side_by_side_tokens(output1, output2, col_widths, options_.line_length);
         }
     } else {
         // Join tokens for output
@@ -185,7 +192,7 @@ std::pair<bool, double> NumericDiff::compare_lines(const std::string& line1,
         toPrint1 = join(output1);
         toPrint2 = join(output2);
         toPrintErrors = join(errors);
-        Printer::print_diff(toPrint1, toPrint2, toPrintErrors);
+        printer_.print_diff(toPrint1, toPrint2, toPrintErrors);
     }
     return res;
 }

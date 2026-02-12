@@ -44,8 +44,8 @@ void ArgParser::parse_columns(const std::string& col_arg, std::set<size_t>& colu
     }
 }
 
-numdiff::NumericDiffOption ArgParser::parse_args(int argc, char* argv[]) {
-    numdiff::NumericDiffOption o;
+numdiff::NumericDiffOptions ArgParser::parse_args(int argc, char* argv[]) {
+    numdiff::NumericDiffOptions o;
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "-v" || arg == "--version") {
@@ -58,13 +58,13 @@ numdiff::NumericDiffOption ArgParser::parse_args(int argc, char* argv[]) {
             o.side_by_side = true;
         } else if ((arg == "-t" || arg == "--tolerance")) {
             if (i + 1 < argc) {
-                o.tolerance = std::stof(argv[++i]);
+                o.tolerance = std::stod(argv[++i]);
             } else {
                 throw std::runtime_error("Error: Missing value for " + arg + " option.\n");
             }
         } else if (arg == "-threshold" || arg == "-T" || arg == "--threshold") {
             if (i + 1 < argc) {
-                o.threshold = std::stof(argv[++i]);
+                o.threshold = std::stod(argv[++i]);
             } else {
                 throw std::runtime_error("Error: Missing value for " + arg + " option.\n");
             }
@@ -104,7 +104,7 @@ numdiff::NumericDiffOption ArgParser::parse_args(int argc, char* argv[]) {
     return o;
 }
 
-void ArgParser::validate_options(const numdiff::NumericDiffOption& o) {
+void ArgParser::validate_options(const numdiff::NumericDiffOptions& o) {
     if (o.file1.empty() || o.file2.empty())
         throw std::runtime_error("Error: Two input files must be specified.\n");
 
@@ -128,6 +128,6 @@ void ArgParser::validate_options(const numdiff::NumericDiffOption& o) {
 }
 
 // Implement parse and validate as wrappers for parse_args and validate_options
-numdiff::NumericDiffOption ArgParser::parse(int argc, char* argv[]) {
+numdiff::NumericDiffOptions ArgParser::parse(int argc, char* argv[]) {
     return parse_args(argc, argv);
 }

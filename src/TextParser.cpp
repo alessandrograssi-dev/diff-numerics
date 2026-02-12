@@ -3,16 +3,10 @@
 #include <charconv>
 #include <sstream>
 
-std::string TextParser::m_comment_prefix = "#";
-
-void TextParser::set_comment_prefix(const std::string& comment_prefix) {
-    m_comment_prefix = comment_prefix;
-}
-
-bool TextParser::line_is_comment(const std::string& line) {
+bool TextParser::line_is_comment(const std::string& line, std::string_view prefix) {
     size_t pos = line.find_first_not_of(" \t");
     if (pos == std::string::npos) return false;
-    return line.compare(pos, m_comment_prefix.size(), m_comment_prefix) == 0;
+    return line.compare(pos, std::string(prefix).size(), std::string(prefix)) == 0;
 }
 
 // Helper: check if a string is numeric

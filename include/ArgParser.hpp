@@ -5,11 +5,11 @@ class ArgParser {
    public:
     ArgParser() = delete;
     static void print_usage();
-    static numdiff::NumericDiffOption parse(int argc, char* argv[]);
+    static numdiff::NumericDiffOptions parse(int argc, char* argv[]);
 
    private:
-    static numdiff::NumericDiffOption parse_args(int argc, char* argv[]);
-    static void validate_options(const numdiff::NumericDiffOption& options);
+    static numdiff::NumericDiffOptions parse_args(int argc, char* argv[]);
+    static void validate_options(const numdiff::NumericDiffOptions& options);
     static void parse_columns(const std::string& col_arg, std::set<size_t>& columns_to_compare);
     static const std::string usage;
 
