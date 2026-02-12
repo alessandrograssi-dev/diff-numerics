@@ -1,3 +1,10 @@
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue?style=flat-square&logo=cplusplus)](https://en.cppreference.com/w/cpp/17)
+[![CMake](https://img.shields.io/badge/CMake-3.10+-064F8C?style=flat-square&logo=cmake)](https://cmake.org/)
+[![GoogleTest](https://img.shields.io/badge/Testing-GoogleTest-red?style=flat-square)](https://google.github.io/googletest/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Linux-orange?style=flat-square)](https://github.com/your-username/diff-numerics)
+[![CI (Ubuntu)](https://github.com/alessandrograssi-dev/diff-numerics/actions/workflows/ci.yml/badge.svg)](https://github.com/alessandrograssi-dev/diff-numerics/actions/workflows/ci.yml)
+
 # diff-numerics
 
 A high-performance numerical file comparison tool with intelligent tolerance handling and fine-grained difference visualization.
