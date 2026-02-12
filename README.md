@@ -1,219 +1,385 @@
 # diff-numerics
 
+A high-performance numerical file comparison tool with intelligent tolerance handling and fine-grained difference visualization.
+
+## 📋 Overview
+
+`diff-numerics` is a specialized command-line tool for comparing numerical data files with configurable tolerance and threshold settings. Unlike traditional text-based diff tools, it understands numerical values and can report differences that exceed specified tolerance levels while ignoring insignificant variations.
+
+Built with modern C++17, the project emphasizes clean architecture, comprehensive testing, and production-ready code quality suitable for scientific computing, data validation, and automated testing pipelines.
+
+## ✨ Key Features
+
+### Numerical Comparison
+- **Smart tolerance handling**: Configurable relative tolerance and absolute threshold for near-zero values
+- **Scientific notation support**: Handles standard and exponential notation (e.g., `1.23e-5`)
+- **Column-selective comparison**: Compare only specified columns with 1-based indexing
+
+### Output Formats
+- **Side-by-side view**: Aligned columns with intelligent separator selection
+- **Unified diff format**: Traditional `< file1` / `> file2` / `>> errors` style
+- **Multiple modes**: Quiet mode, summary mode, or detailed line-by-line output
+
+### Visualization
+- **Fine-grained colorization**: Digit-level highlighting shows exactly where numbers differ
+- **Full highlighting**: Red coloring for entire differing values
+- **ANSI-aware formatting**: Proper handling of terminal escape sequences in width calculations
+
+### Flexibility
+- **Comment handling**: Skip lines starting with configurable prefixes
+- **Suppress common lines**: Show only differences in side-by-side mode
+- **Configurable output width**: Control line length for terminal display
+
+## 🔧 Technical Highlights
+
+### Modern C++17 Implementation
+- Extensive use of structured bindings, `std::from_chars`, and STL algorithms
+- Zero-cost abstractions with compile-time optimization
+- RAII principles and careful resource management throughout
+
+### Clean Architecture
+- Modular design with distinct responsibilities: parsing, formatting, comparison, output
+- Stateless utility classes for thread-safe text processing and formatting
+- Namespace organization preventing naming collisions
+- Forward declarations avoiding circular dependencies
+
+### Code Quality
+- Comprehensive inline documentation explaining algorithms and edge cases
+- Consistent coding style and professional naming conventions
+- Robust error handling with descriptive messages
+- Full test suite using GoogleTest with automated CI via CTest
+
+### Performance Considerations
+- High-performance numeric parsing using `std::from_chars` (locale-independent, no exceptions)
+- Efficient ANSI escape sequence processing for terminal output
+- Minimal memory allocations in hot paths
+
 ---
-**Project Overview**
 
-`diff-numerics` is a professional C++ tool for comparing numerical data files with configurable tolerance, threshold, and output options. It is designed for scientific and engineering workflows where precise numerical comparison is required.
+## 🏗️ Architecture
 
-- **Source code:** See `src/` and `include/diff-numerics/`
-- **Tests:** See `test/` (uses GoogleTest)
-- **Build system:** CMake and Makefile (see below)
-- **Documentation:** Man page (`diff-numerics.1`), this README, and code comments
+The project follows a modular, object-oriented design with clear separation of concerns:
 
----
-
-## Project Structure
-
-- `src/` - Main source files for the diff-numerics tool
-- `include/diff-numerics/` - Public headers (notably `NumericDiff.h`)
-- `test/` - Test suite, test data, and test CMake configuration
-- `bin/` - Built executables
-- `build/` - CMake build directory (not in version control)
-- `Makefile` - Top-level automation for build, install, test, and clean
-- `CMakeLists.txt` - Top-level CMake configuration
-- `diff-numerics.1` - Man page for the command-line tool
-
----
-
-## Building and Installing
-
-### With Makefile (recommended)
-
-```sh
-make           # Build the project
-make test      # Run the test suite
-sudo make install   # Install binary, headers, and man page
-sudo make uninstall # Remove installed files
-make clean     # Remove build artifacts
+```
+diff-numerics/
+├── include/              # Public headers
+│   ├── NumericDiff.hpp   # Core comparison engine and result structures
+│   ├── ArgParser.hpp     # Command-line argument parser
+│   ├── Printer.hpp       # Output formatter (side-by-side, unified diff)
+│   ├── Formatter.hpp     # ANSI code handling, string formatting
+│   ├── TextParser.hpp    # Tokenization, comment detection, numeric validation
+│   └── ...
+├── src/                  # Implementation files
+│   ├── main.cpp          # Entry point
+│   ├── NumericDiff.cpp   # Comparison algorithm
+│   ├── ArgParser.cpp     # CLI parsing and validation
+│   ├── Printer.cpp       # Output rendering
+│   ├── Formatter.cpp     # ANSI manipulation utilities
+│   ├── TextParser.cpp    # Text parsing utilities
+│   └── ...
+└── test/                 # GoogleTest test suite
+    └── test-diff-numerics.cpp
 ```
 
-### With CMake directly
+### Core Components
 
-```sh
-cmake -S . -B build
-cmake --build build
-cd build && ctest --output-on-failure
-sudo cmake --install build
-```
+#### `NumericDiff` (Main Engine)
+- Encapsulates comparison logic and file I/O
+- Provides `NumericDiffOptions` for configuration and `NumericDiffResult` for statistics
+- Implements line-by-line comparison with token-based numeric validation
+- Handles special cases: near-zero values, scientific notation, column filtering
 
----
+#### `ArgParser` (CLI Interface)
+- Parses command-line arguments with robust validation
+- Supports both short (`-t`) and long (`--tolerance`) option formats
+- Validates ranges for all numeric parameters
+- Provides comprehensive help text and version information
 
-## Testing
+#### `Printer` (Output Formatter)
+- Generates formatted output in multiple styles (quiet, only-equal, side-by-side, unified)
+- Handles ANSI escape sequences in width calculations
+- Intelligent separator selection based on line differences
 
-- Tests are written with GoogleTest and located in `test/test_diff-numerics.cpp`.
-- Test data files are in `test/`.
-- Run `make test` or `ctest` from the build directory to execute all tests.
-- To run a specific test case or see verbose output, use:
+#### `Formatter` (String Utilities)
+- ANSI escape sequence manipulation (add, remove, validate)
+- Column width calculation excluding formatting codes
+- Fine-grained digit-level colorization for numeric strings
+- Visible character extraction with format preservation
 
-```sh
-cd build
-./bin/diff-numerics_tests --gtest_filter=DiffNumerics.*
-```
-
-- To manually check the CLI output for a specific test case (e.g., for the 3P2-3F2 files):
-
-```sh
-./bin/diff-numerics test/delta_3P2-3F2.dat test/delta_3P2-3F2_2.dat
-./bin/diff-numerics -y test/delta_3P2-3F2.dat test/delta_3P2-3F2_2.dat
-./bin/diff-numerics -s test/delta_3P2-3F2.dat test/delta_3P2-3F2_2.dat
-```
-
-- The test suite covers all main diff-numerics modes (default, tight tolerance, side-by-side, suppress common lines, quiet, CLI summary) and asserts on output patterns for robust coverage.
+#### `TextParser` (Text Processing)
+- Whitespace-based tokenization using `std::istringstream`
+- Comment line detection with configurable prefixes
+- High-performance numeric validation using `std::from_chars`
 
 ---
 
-## Contributing
-
-- See `CONTRIBUTING.md` for guidelines.
-- Code style is enforced via `.clang-format` and `.editorconfig`.
-- Please read the comments in each source file for guidance on structure and intent.
-
----
-
-## Documentation
-
-- The code is heavily commented for clarity and onboarding.
-- See the man page (`diff-numerics.1`) for command-line usage.
-- For more details, see the comments at the top of each source, header, and build file.
-
----
-
-## License
-
-See `LICENSE` for details.
-
----
-
-## TODO / Ideas
-
-- Add option to ignore columns that are zero in both files for each line.
-- Realign lines whose numbers are different in the two files but are otherwise similar.
-- Add unit tests and CI integration.
-- Support for config files.
-- Output to HTML/Markdown.
-- GUI frontend.
-- Improved error handling and reporting.
-
----
-
-## Features
-
-- Compares two files line by line, column by column.
-- Supports floating-point tolerance and threshold for ignoring insignificant differences.
-- Side-by-side diff output, with optional suppression of common lines.
-- Customizable comment character to skip metadata or header lines.
-- Quiet and summary-only modes for scripting and automation.
-- Colorized output for easy identification of differences.
-
----
-
-## Build & Installation
+## 🚀 Building
 
 ### Prerequisites
 
-- C++ compiler (C++11 or newer)
-- CMake (version 3.10+ recommended)
-- Make
+- **C++17 compatible compiler** (GCC 7+, Clang 5+, MSVC 2017+)
+- **CMake 3.10+**
+- **Make** (or Ninja)
 
-### Build Steps
+### Build Instructions
 
 ```bash
-# Clone the repository (if not already)
-git clone <repo-url>
+# Clone the repository
+git clone <repository-url>
 cd diff-numerics
 
-# Build using Makefile (uses CMake under the hood)
+# Create build directory and configure
+mkdir -p build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+
+# Build
+make -j$(nproc)
+
+# Run tests
+make test
+
+# Binary location
+./build/bin/diff-numerics
+```
+
+### Build Targets
+
+```bash
+make all          # Build everything (default)
+make diff-numerics # Build only the main executable
+make test         # Build and run tests
+make clean        # Clean build artifacts
+```
+
+### Installation
+
+To install `diff-numerics` system-wide:
+
+```bash
+# From the build directory
+sudo make install
+```
+
+This will install:
+- Binary: `/usr/local/bin/diff-numerics`
+- Man page: `/usr/local/share/man/man1/diff-numerics.1`
+
+After installation, you can run `diff-numerics` from anywhere:
+
+```bash
+diff-numerics file1.dat file2.dat
+```
+
+To uninstall:
+
+```bash
+# From the build directory
+sudo make uninstall
+```
+
+---
+
+## 📖 Usage
+
+### Basic Syntax
+
+```bash
+diff-numerics [options] file1 file2
+```
+
+### Common Options
+
+| Option | Long Form | Description | Default |
+|--------|-----------|-------------|---------|
+| `-t` | `--tolerance` | Percentage difference threshold | `1e-2` (1%) |
+| `-T` | `--threshold` | Absolute value for near-zero comparison | `1e-6` |
+| `-y` | `--side-by-side` | Show files side by side | Off |
+| `-ys` | `--suppress-common-lines` | Hide matching lines (implies `-y`) | Off |
+| `-c` | `--comment-string` | Comment prefix to ignore | `#` |
+| `-w` | `--single-column-width` | Maximum line length | `60` |
+| `-s` | `--report-identical-files` | Only report if files equal/differ | Off |
+| `-q` | `--quiet` | Suppress detailed output | Off |
+| `-d` | `--color-different-digits` | Colorize only differing digits | Off |
+| `-C` | `--columns` | Compare specific columns (1-based) | All columns |
+| `-v` | `--version` | Show version and exit | - |
+| `-h` | `--help` | Show help message | - |
+
+### Examples
+
+#### Basic comparison with default tolerance
+```bash
+diff-numerics data1.dat data2.dat
+```
+
+#### Side-by-side view with custom tolerance
+```bash
+diff-numerics -y -t 1e-5 data1.dat data2.dat
+```
+
+#### Compare only columns 1, 3, and 5
+```bash
+diff-numerics -C 1,3,5 data1.dat data2.dat
+```
+
+#### Suppress matching lines, show only differences
+```bash
+diff-numerics -ys data1.dat data2.dat
+```
+
+#### Fine-grained digit colorization
+```bash
+diff-numerics -y -d data1.dat data2.dat
+```
+
+#### Quiet mode (only report if files differ)
+```bash
+diff-numerics -q data1.dat data2.dat
+echo $?  # Exit code: 0 if equal, non-zero if different
+```
+
+---
+
+## 🔬 Algorithm Details
+
+### Comparison Logic
+
+1. **File Reading**: Both files are read line-by-line, skipping comment lines
+2. **Tokenization**: Each line is split into whitespace-separated tokens
+3. **Column Validation**: Both lines must have the same number of tokens
+4. **Token Comparison**:
+   - **Numeric tokens**: Compared using percentage difference formula
+   - **Non-numeric tokens**: Copied verbatim (not compared)
+5. **Percentage Calculation**:
+   ```
+   diff = |value1 - value2| / max(|value1|, |value2|) * 100
+   ```
+6. **Special Cases**:
+   - Both values < threshold: treated as equal (0% difference)
+   - One value < threshold, other ≥ threshold: infinite difference
+7. **Output Formatting**: Results formatted based on options
+
+### Tolerance vs Threshold
+
+- **Tolerance** (`-t`): Relative percentage difference (e.g., 1% = 0.01)
+  - Values differing by less than this percentage are considered equal
+  - Applies to all comparisons where both values exceed the threshold
+
+- **Threshold** (`-T`): Absolute value cutoff for near-zero comparisons
+  - Values below this are treated as "effectively zero"
+  - Prevents false positives when comparing very small numbers
+
+**Example**:
+```
+tolerance = 1e-2 (1%)
+threshold = 1e-6
+
+Compare 1.0001 vs 1.0000:
+  diff = |1.0001 - 1.0000| / max(1.0001, 1.0000) * 100 = 0.01%
+  Result: EQUAL (0.01% < 1%)
+
+Compare 1e-7 vs 2e-7:
+  Both < threshold (1e-6)
+  Result: EQUAL (both effectively zero)
+
+Compare 1e-7 vs 1e-5:
+  One < threshold, one > threshold
+  Result: DIFFER (infinite difference)
+```
+
+---
+
+## ✅ Testing
+
+The project includes a comprehensive test suite built with GoogleTest.
+
+### Running Tests
+
+```bash
+# Run all tests
+make test
+
+# Or run the test binary directly for detailed output
+./build/bin/diff-numerics-tests
+```
+
+### Test Coverage
+
+The test suite validates:
+- Default and tight tolerance comparisons
+- Side-by-side and unified diff output formats
+- Common line suppression
+- Quiet mode behavior
+- Column-selective comparison
+- Scientific notation handling
+- Fine-grained digit colorization
+- CLI argument validation (invalid options, missing files, etc.)
+- Edge cases (same file, missing files, empty lines)
+
+---
+
+## 🛠️ Development
+
+### Code Style
+
+- **C++ Standard**: C++17
+- **Naming Conventions**:
+  - Classes: `PascalCase`
+  - Functions/methods: `snake_case`
+  - Member variables: `snake_case_` (trailing underscore)
+  - Constants: `UPPER_CASE` or `snake_case` for `constexpr`
+- **Documentation**: Doxygen-style comments for all public interfaces
+- **Error Handling**: Exceptions for unrecoverable errors, return values for expected failures
+
+### Adding New Features
+
+1. Update relevant header in `include/`
+2. Implement in corresponding `src/*.cpp` file
+3. Add tests in `test/test-diff-numerics.cpp`
+4. Update this README if user-facing
+5. Run tests: `make test`
+
+### Debugging
+
+```bash
+# Build with debug symbols
+cmake .. -DCMAKE_BUILD_TYPE=Debug
 make
-```
 
-The binary will be placed in the `bin/` directory.
-
----
-
-## Usage
-
-```bash
-./bin/diff-numerics [options] file1 file2
-```
-
-### Return Value
-
-- Returns `0` if the files are equal within tolerance.
-- Returns a positive integer equal to the number of differing lines if files differ.
-- Returns `-1` if an error occurred (e.g., file not found or invalid arguments).
-
-This makes it easy to use `diff-numerics` in scripts and CI pipelines for automated checks.
-
-### Options
-
-| Option                        | Description                                                                 |
-|-------------------------------|-----------------------------------------------------------------------------|
-| `-y`, `--side-by-side`        | Print lines side by side                                                    |
-| `-ys`, `--suppress-common-lines` | Suppress lines within tolerance in side-by-side mode (implies -y)         |
-| `-t`, `--tolerance <value>`   | Tolerance for percentage difference (default: 1E-2)                         |
-| `-T`, `--threshold <value>`   | Ignore if both values are under threshold (default: 1E-6)                   |
-| `-c`, `--comment-string <str>`| String to start a comment (default: `#`)                                    |
-| `-w`, `--single-column-width <n>` | Set column width for side-by-side output (default: 60)                  |
-| `-s`, `--report-identical-files` | Print only if files are equal within tolerance, otherwise print summary   |
-| `-q`, `--quiet`               | Suppress all output if files are equal within tolerance                     |
-| `-d`, `--color-different-digits` | Colorize only the part of the numbers that differ                        |
-| `-C`, `--columns <list>`         | Comma-separated list of columns (0-based) to compare                     |
-
-### Example
-
-```bash
-./bin/diff-numerics -y -d -C 2,3 -t 0.01 -T 1e-5 data1.dat data2.dat
+# Run with debugger
+gdb ./build/bin/diff-numerics
 ```
 
 ---
 
-## Output
+## 📄 License
 
-- **Side-by-side mode:** Shows both files' lines next to each other, highlighting differences.
-- **Suppressed common lines:** Only lines with differences are shown.
-- **Quiet mode:** No output if files are equal within tolerance.
-- **Summary mode:** Prints a summary if files are not equal.
-- **Exit code:** See above for return value details.
+See [LICENSE](LICENSE) file for details.
 
 ---
 
-## Test
+## 👤 Author
 
-A sample test output is provided in the `test` file. You can generate your own by running:
-
-```bash
-./bin/diff-numerics -y delta_3D2_2.dat delta_3D2.dat
-```
+Alessandro Grassi
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Please open issues or pull requests for bug fixes, new features, or documentation improvements.
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
 
 ---
 
-## License
+## 📝 Version History
 
-This project is licensed under the terms of the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
-
----
-
-## TODO / Ideas
-
-- Give the possibility to ignore the columns that for both files are zero for each line.
-- Realign lines whose number are different in the two files but are otherwise similar.
-- Support for config files.
-- Output to HTML/Markdown.
-- GUI frontend.
-- Improved error handling and reporting.
+- **v1.0.0** (2026-02-12): Initial release with core functionality
+  - Numerical comparison with tolerance/threshold
+  - Side-by-side and unified diff formats
+  - Fine-grained digit colorization
+  - Column-selective comparison
+  - Comprehensive test suite

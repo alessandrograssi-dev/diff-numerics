@@ -22,6 +22,11 @@
 namespace fs = std::filesystem;
 using namespace numdiff;
 
+struct FullOutput {
+    std::string output;
+    NumericDiffResult result;
+};
+
 // Helper to copy test data to a temp file (not used in current tests)
 void copy_file(const std::string& src, const std::string& dst) {
     std::ifstream in(src);
@@ -51,7 +56,7 @@ std::string project_root() {
 // Helper to run NumericDiff and capture its output
 // This function constructs a NumericDiff object with the given options,
 // runs the comparison, and returns the output as a string.
-NumericDiffResult run_diff(const std::string& file1, const std::string& file2, double tol,
+FullOutput run_diff(const std::string& file1, const std::string& file2, double tol,
                            double threshold, bool side_by_side, bool suppress_common_lines,
                            bool only_equal, bool quiet, bool color_diff_digits = false,
                            std::set<size_t> columns = {}) {
@@ -67,8 +72,12 @@ NumericDiffResult run_diff(const std::string& file1, const std::string& file2, d
     opts.color_diff_digits = color_diff_digits;
     opts.columns_to_compare = columns;
 
-    NumericDiff diff(opts);
-    return diff.run();
+    FullOutput output;
+    std::ostringstream oss;
+    NumericDiff diff(opts, oss);
+    output.result = diff.run();
+    output.output = oss.str();
+    return output;
 }
 
 // Helper to run the diff_numerics binary as a subprocess and capture stderr
@@ -91,7 +100,7 @@ TEST(DiffNumerics, DifferentFilesDefaultTolerance) {
     auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"), 1E-2,
                            1E-6, false, false, false, false);
 
-    EXPECT_GT(result.n_different_lines, 0);
+    EXPECT_GT(result.result.n_different_lines, 0);
 }
 
 // Test: Tight tolerance, files should still be different (output should not be empty)
@@ -99,14 +108,14 @@ TEST(DiffNumerics, DifferentFilesTightTolerance) {
     auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"),
                            1E-10, 1E-12, false, false, false, false);
 
-    EXPECT_NE(result.n_different_lines, 0);
+    EXPECT_NE(result.result.n_different_lines, 0);
 }
 
 // Test: Side-by-side output mode
 TEST(DiffNumerics, SideBySideOutput) {
     auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"), 1E-2,
                            1E-6, true, false, false, false);
-    EXPECT_NE(result.n_different_lines, 0);
+    EXPECT_NE(result.result.n_different_lines, 0);
     // EXPECT_NE(result.find("|"), std::string::npos);
 }
 
@@ -114,14 +123,14 @@ TEST(DiffNumerics, SideBySideOutput) {
 TEST(DiffNumerics, SuppressCommonLines) {
     auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"), 1E-2,
                            1E-6, true, true, false, false);
-    EXPECT_NE(result.n_different_lines, 0);
+    EXPECT_NE(result.result.n_different_lines, 0);
 }
 
 // Test: Quiet mode (should still be non-empty for different files)
 TEST(DiffNumerics, QuietMode) {
     auto result = run_diff(test_data_path("delta_3D2_2.dat"), test_data_path("delta_3D2.dat"), 1E-2,
                            1E-6, false, false, false, true);
-    EXPECT_NE(result.n_different_lines, 0);
+    EXPECT_NE(result.result.n_different_lines, 0);
 }
 
 // Test: Invalid column width
@@ -173,48 +182,48 @@ TEST(DiffNumericsCLI, MissingFileError) {
 TEST(DiffNumerics, P2F2_DifferentFilesDefaultTolerance) {
     std::string file1 = test_data_path("delta_3P2-3F2.dat");
     std::string file2 = test_data_path("delta_3P2-3F2_2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-2, 1E-6, false, false, false, false);
-    EXPECT_NE(output.n_different_lines, 0);
-    // EXPECT_NE(output.find("1e+99%"), std::string::npos);
-    // EXPECT_NE(output.find("< 0.46500000000000002"), std::string::npos);
-    // EXPECT_NE(output.find("> 0.46500000000000002"), std::string::npos);
+    FullOutput output = run_diff(file1, file2, 1E-2, 1E-6, false, false, false, false);
+    EXPECT_NE(output.result.n_different_lines, 0);
+    EXPECT_NE(output.output.find("1e+99%"), std::string::npos);
+    EXPECT_NE(output.output.find("< 0.46500000000000002"), std::string::npos);
+    EXPECT_NE(output.output.find("> 0.46500000000000002"), std::string::npos);
 }
 
 // Test: Tight tolerance, files should still be different
 TEST(DiffNumerics, P2F2_DifferentFilesTightTolerance) {
     std::string file1 = test_data_path("delta_3P2-3F2.dat");
     std::string file2 = test_data_path("delta_3P2-3F2_2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-10, 1E-12, false, false, false, false);
-    EXPECT_NE(output.n_different_lines, 0);
-    // EXPECT_NE(output.find("< 0.46500000000000002"), std::string::npos);
+    FullOutput output = run_diff(file1, file2, 1E-10, 1E-12, false, false, false, false);
+    EXPECT_NE(output.result.n_different_lines, 0);
+    EXPECT_NE(output.output.find("< 0.46500000000000002"), std::string::npos);
 }
 
 // Test: Side-by-side output mode
 TEST(DiffNumerics, P2F2_SideBySideOutput) {
     std::string file1 = test_data_path("delta_3P2-3F2.dat");
     std::string file2 = test_data_path("delta_3P2-3F2_2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-2, 1E-6, true, false, false, false);
-    EXPECT_NE(output.n_different_lines, 0);
-    // EXPECT_NE(output.find("|"), std::string::npos);
-    // EXPECT_NE(output.find("0.46500000000000002"), std::string::npos);
-    // EXPECT_NE(output.find("1.20741826972573"), std::string::npos);
+    FullOutput output = run_diff(file1, file2, 1E-2, 1E-6, true, false, false, false);
+    EXPECT_NE(output.result.n_different_lines, 0);
+    EXPECT_NE(output.output.find("|"), std::string::npos);
+    EXPECT_NE(output.output.find("0.46500000000000002"), std::string::npos);
+    EXPECT_NE(output.output.find("1.20741826972573"), std::string::npos);
 }
 
 // Test: Suppress common lines in output
 TEST(DiffNumerics, P2F2_SuppressCommonLines) {
     std::string file1 = test_data_path("delta_3P2-3F2.dat");
     std::string file2 = test_data_path("delta_3P2-3F2_2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-2, 1E-6, true, true, false, false);
-    EXPECT_NE(output.n_different_lines, 0);
-    // EXPECT_NE(output.find("|"), std::string::npos);
+    FullOutput output = run_diff(file1, file2, 1E-2, 1E-6, true, true, false, false);
+    EXPECT_NE(output.result.n_different_lines, 0);
+    EXPECT_NE(output.output.find("|"), std::string::npos);
 }
 
 // Test: Quiet mode
 TEST(DiffNumerics, P2F2_QuietMode) {
     std::string file1 = test_data_path("delta_3P2-3F2.dat");
     std::string file2 = test_data_path("delta_3P2-3F2_2.dat");
-    NumericDiffResult output = run_diff(file1, file2, 1E-2, 1E-6, false, false, false, true);
-    EXPECT_NE(output.n_different_lines, 0);
+    FullOutput output = run_diff(file1, file2, 1E-2, 1E-6, false, false, false, true);
+    EXPECT_NE(output.result.n_different_lines, 0);
 }
 
 // Test: CLI summary output for these files
