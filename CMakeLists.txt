@@ -28,7 +28,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 include_directories(include)
 
 # Gather source and header files
-file(GLOB SOURCES "src/*.cpp")
+set(SOURCES 
+    src/main.cpp
+    src/NumericDiffOption.cpp
+    src/NumericDiff.cpp
+)
 
 # Set project version
 set(PROJECT_VERSION "1.0.0")

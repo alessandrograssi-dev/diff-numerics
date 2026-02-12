@@ -58,8 +58,7 @@ uninstall-cmake:
 	cmake -P cmake_uninstall.cmake
 
 # Build and run all tests (with output)
-test: $(BUILD_DIR)
-	cd $(BUILD_DIR) && $(CMAKE) -DCMAKE_BUILD_TYPE=Debug ..
+test: all
 	cd $(BUILD_DIR) && $(MAKE) && ctest --output-on-failure
 
 # Show available targets and their descriptions
