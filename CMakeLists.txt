@@ -26,11 +26,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 # Include directories for headers
 include_directories(include)
-include_directories(include/diff-numerics)
 
 # Gather source and header files
-file(GLOB SOURCES "src/*.cpp" "src/libs/*.cpp")
-file(GLOB HEADERS "include/diff_numerics/*.h")
+file(GLOB SOURCES "src/*.cpp")
 
 # Set project version
 set(PROJECT_VERSION "1.0.0")
@@ -52,7 +50,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Install rules for binary, man page, and headers
 install(TARGETS diff-numerics DESTINATION bin)
 install(FILES ${CMAKE_SOURCE_DIR}/diff-numerics.1 DESTINATION share/man/man1)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/diff-numerics DESTINATION include)
 
 # Enable testing and add GoogleTest for tests
 include(CTest)

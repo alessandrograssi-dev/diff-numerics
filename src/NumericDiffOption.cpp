@@ -1,8 +1,7 @@
 // NumericDiffOption.cpp
-#include "diff-numerics/NumericDiffOption.h"
+#include "NumericDiffOption.hpp"
 #include <iostream>
 #include <sstream>
-#include <cstdlib>
 
 // Define static member
 const std::string NumericDiffOption::usage =

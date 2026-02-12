@@ -11,15 +11,12 @@
 // - Handles comments, column widths, and summary statistics
 // -------------------------------------------------------------
 
-#include "../include/diff-numerics/NumericDiff.h"
-#include "diff-numerics/NumericDiffOption.h"
+#include "NumericDiff.hpp"
+#include "NumericDiffOption.hpp"
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <vector>
 #include <algorithm>
-#include <cmath>
-#include <numeric>
 #include <iomanip> // For std::setw
 #include <set>
 

@@ -22,7 +22,7 @@ add_executable(diff-numerics-tests
     ${CMAKE_SOURCE_DIR}/test/test-diff-numerics.cpp
     ${CMAKE_SOURCE_DIR}/src/NumericDiff.cpp
 )
-target_include_directories(diff-numerics-tests PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/diff-numerics)
+target_include_directories(diff-numerics-tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(diff-numerics-tests gtest_main)
 target_compile_definitions(diff-numerics-tests PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME diff-numerics-tests COMMAND diff-numerics-tests)

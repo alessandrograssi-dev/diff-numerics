@@ -1,4 +1,4 @@
-// NumericDiff.h
+// NumericDiff.hpp
 // -------------------------------------------------------------
 // This header defines the NumericDiff class, which provides functionality
 // for comparing two numerical data files line by line, with configurable
@@ -11,7 +11,7 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "diff-numerics/NumericDiffOption.h"
+#include "NumericDiffOption.hpp"
 
 class NumericDiff {
 public:

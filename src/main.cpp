@@ -7,14 +7,10 @@
 // Usage and options are printed if arguments are missing or invalid.
 // -------------------------------------------------------------
 
-#include <iostream>
 #include <string>
-#include <vector>
-#include <cstdlib>
-#include <set>
-#include <sstream>
-#include "diff-numerics/NumericDiff.h"
-#include "diff-numerics/NumericDiffOption.h"
+
+#include "NumericDiff.hpp"
+#include "NumericDiffOption.hpp"
 
 int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; ++i) {
@@ -27,7 +23,7 @@ int main(int argc, char* argv[]) {
     NumericDiffOption opts;
     if (!opts.parse(argc, argv)) return 1;
     if (!opts.validate()) return 1;
-    
+
     NumericDiff diff(opts);
     return diff.run();
 }
