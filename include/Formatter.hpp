@@ -1,15 +1,13 @@
 #pragma once
-#include <fstream>
-#include <sstream>
 #include <string>
 #include <vector>
 
 class Formatter {
-public:
+   public:
     Formatter() = delete;
 
     static std::vector<size_t> calculate_col_widths(const std::vector<std::string>& t1,
-                                        const std::vector<std::string>& t2);
+                                                    const std::vector<std::string>& t2);
 
     // Remove ANSI color codes from a string
     static std::string strip_ansi(const std::string& input);
@@ -32,8 +30,7 @@ public:
     // Colorize only the digits that differ between s1 and s2 (ANSI red: \033[31m ... \033[0m)
     static void colorize_different_digits(std::string& s1, std::string& s2);
 
-private:
-    static constexpr std::string_view RED   = "\033[31m";
+   private:
+    static constexpr std::string_view RED = "\033[31m";
     static constexpr std::string_view RESET = "\033[0m";
-
 };

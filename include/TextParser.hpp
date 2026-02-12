@@ -4,7 +4,7 @@
 #include <vector>
 
 class TextParser {
-public:
+   public:
     TextParser() = delete;
 
     // Helper: tokenize a line into a vector of strings
@@ -13,6 +13,6 @@ public:
     static bool string_is_numeric(const std::string& str);
     static void set_comment_prefix(const std::string& comment_prefix);
 
-private:
+   private:
     static std::string m_comment_prefix;
 };

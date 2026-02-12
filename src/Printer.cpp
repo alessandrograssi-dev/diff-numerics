@@ -1,15 +1,14 @@
 #include "Printer.hpp"
 
-#include "Formatter.hpp"
-#include <iostream>
-#include <cmath>
 #include <algorithm>
+#include <iostream>
+
+#include "Formatter.hpp"
 
 // New helper: print tokens side by side, column by column, with color and padding
 void Printer::print_side_by_side_tokens(const std::vector<std::string>& tokens1,
-                                      const std::vector<std::string>& tokens2,
-                                      const std::vector<size_t>& col_widths,
-                                      int line_length) {
+                                        const std::vector<std::string>& tokens2,
+                                        const std::vector<size_t>& col_widths, int line_length) {
     // Print tokens side by side, aligning columns. Never truncate or cut numeric values: if a value
     // is longer than the max column width, the column expands to fit the value. The max column
     // width only limits padding/alignment, not the content of the numbers. ANSI color codes are
@@ -45,10 +44,9 @@ void Printer::print_side_by_side_tokens(const std::vector<std::string>& tokens1,
     std::cout << l1 << sep << l2 << "\n";
 }
 
-
 // Print differences in a diff-like format
 void Printer::print_diff(const std::string& output1, const std::string& output2,
-                            const std::string& errors) {
+                         const std::string& errors) {
     // Only print lines that contain red marks (i.e., differences)
     bool has_red1 = Formatter::string_is_red(output1);
     bool has_red2 = Formatter::string_is_red(output2);

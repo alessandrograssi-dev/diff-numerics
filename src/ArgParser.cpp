@@ -1,7 +1,7 @@
 #include "ArgParser.hpp"
+
 #include <iostream>
 #include <sstream>
-
 
 // Define static member
 const std::string ArgParser::usage =
@@ -31,14 +31,14 @@ void ArgParser::print_usage() {
     std::cout << usage << std::endl;
 }
 
-void ArgParser::parse_columns(const std::string& col_arg,
-                                      std::set<size_t>& columns_to_compare) {
+void ArgParser::parse_columns(const std::string& col_arg, std::set<size_t>& columns_to_compare) {
     std::stringstream ss(col_arg);
     std::string col;
     while (std::getline(ss, col, ',')) {
         size_t col_num = std::stoul(col);
         if (col_num < 1) {
-            throw std::runtime_error("Error: Column numbers must be at least 1 (got " + std::to_string(col_num) + ").\n");
+            throw std::runtime_error("Error: Column numbers must be at least 1 (got " +
+                                     std::to_string(col_num) + ").\n");
         }
         columns_to_compare.insert(col_num);
     }
@@ -105,23 +105,26 @@ numdiff::NumericDiffOption ArgParser::parse_args(int argc, char* argv[]) {
 }
 
 void ArgParser::validate_options(const numdiff::NumericDiffOption& o) {
-    if (o.file1.empty() || o.file2.empty()) 
+    if (o.file1.empty() || o.file2.empty())
         throw std::runtime_error("Error: Two input files must be specified.\n");
 
-    if (o.file1 == o.file2) 
+    if (o.file1 == o.file2)
         throw std::runtime_error("Error: The two input files must be different.\n");
-    
-    if (o.line_length < min_col_width || o.line_length > max_col_width) 
-        throw std::runtime_error("Error: Column width (" + std::to_string(o.line_length) + ") must be between " + std::to_string(min_col_width)
-                  + " and " + std::to_string(max_col_width) + ".\n");
 
-    if (o.tolerance < min_tol || o.tolerance > max_tol) 
-        throw std::runtime_error("Error: Tolerance (" + std::to_string(o.tolerance) + ") must be between " + std::to_string(min_tol) + " and "
-                  + std::to_string(max_tol) + ".\n");
-    
-    if (o.threshold < min_threshold || o.threshold > max_threshold) 
-        throw std::runtime_error("Error: Threshold (" + std::to_string(o.threshold) + ") must be between " + std::to_string(min_threshold)
-                  + " and " + std::to_string(max_threshold) + ".\n");
+    if (o.line_length < min_col_width || o.line_length > max_col_width)
+        throw std::runtime_error("Error: Column width (" + std::to_string(o.line_length) +
+                                 ") must be between " + std::to_string(min_col_width) + " and " +
+                                 std::to_string(max_col_width) + ".\n");
+
+    if (o.tolerance < min_tol || o.tolerance > max_tol)
+        throw std::runtime_error("Error: Tolerance (" + std::to_string(o.tolerance) +
+                                 ") must be between " + std::to_string(min_tol) + " and " +
+                                 std::to_string(max_tol) + ".\n");
+
+    if (o.threshold < min_threshold || o.threshold > max_threshold)
+        throw std::runtime_error("Error: Threshold (" + std::to_string(o.threshold) +
+                                 ") must be between " + std::to_string(min_threshold) + " and " +
+                                 std::to_string(max_threshold) + ".\n");
 }
 
 // Implement parse and validate as wrappers for parse_args and validate_options

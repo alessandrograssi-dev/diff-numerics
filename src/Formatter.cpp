@@ -1,15 +1,13 @@
 #include "Formatter.hpp"
-#include <iostream>
-#include <cmath>
+
 #include <algorithm>
 #include <charconv>
 
 std::vector<size_t> Formatter::calculate_col_widths(const std::vector<std::string>& t1,
-                                        const std::vector<std::string>& t2) {
+                                                    const std::vector<std::string>& t2) {
     size_t n = std::min(t1.size(), t2.size());
     std::vector<size_t> col_widths(n, 0);
-    for (size_t i = 0; i < n; ++i) 
-        col_widths[i] = std::max(t1[i].size(), t2[i].size());
+    for (size_t i = 0; i < n; ++i) col_widths[i] = std::max(t1[i].size(), t2[i].size());
     return col_widths;
 }
 
@@ -48,7 +46,6 @@ void Formatter::ensure_ansi_reset(std::string& str) {
     }
 }
 
-
 // Extract the first n visible (non-ANSI) characters from a string, preserving formatting codes
 std::string Formatter::extract_visible_prefix(const std::string& input, size_t n) {
     std::string result;
@@ -79,7 +76,6 @@ std::string Formatter::extract_visible_prefix(const std::string& input, size_t n
     return result;
 }
 
-
 // Colorize only the digits that differ between s1 and s2 (ANSI red: \033[31m ... \033[0m)
 void Formatter::colorize_different_digits(std::string& s1, std::string& s2) {
     // If either string contains 'e' or 'E', split into mantissa and exponent
@@ -107,12 +103,14 @@ void Formatter::colorize_different_digits(std::string& s1, std::string& s2) {
     }
     // Build colored mantissas: everything after diff_start is red
     if (diff_start < mant1.size()) {
-        out1 = mant1.substr(0, diff_start) + std::string(RED) + mant1.substr(diff_start) + std::string(RESET);
+        out1 = mant1.substr(0, diff_start) + std::string(RED) + mant1.substr(diff_start) +
+               std::string(RESET);
     } else {
         out1 = mant1;
     }
     if (diff_start < mant2.size()) {
-        out2 = mant2.substr(0, diff_start) + std::string(RED) + mant2.substr(diff_start) + std::string(RESET);
+        out2 = mant2.substr(0, diff_start) + std::string(RED) + mant2.substr(diff_start) +
+               std::string(RESET);
     } else {
         out2 = mant2;
     }

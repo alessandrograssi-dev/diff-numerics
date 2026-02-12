@@ -7,11 +7,11 @@
 // Usage and options are printed if arguments are missing or invalid.
 // -------------------------------------------------------------
 
+#include <iostream>
 #include <string>
 
-#include "NumericDiff.hpp"
 #include "ArgParser.hpp"
-#include <iostream>
+#include "NumericDiff.hpp"
 
 using namespace numdiff;
 
@@ -31,9 +31,9 @@ int main(int argc, char* argv[]) {
         ArgParser::print_usage();
         return -1;
     }
-    
+
     NumericDiff diff(opts);
-    
+
     NumericDiffResult r;
     try {
         r = diff.run();
@@ -50,9 +50,10 @@ int main(int argc, char* argv[]) {
         } else {
             // Print summary as in only_equal_ mode
             std::cout << "Comparing " << opts.file1 << " and " << opts.file2 << "\n";
-            std::cout << "Tolerance: " << opts.tolerance << ", Threshold: " << opts.threshold << "\n";
+            std::cout << "Tolerance: " << opts.tolerance << ", Threshold: " << opts.threshold
+                      << "\n";
             std::cout << "Files DIFFER: " << r.n_different_lines
-                    << " lines differ, max percentage error: " << r.max_percentage_err << "%\n";
+                      << " lines differ, max percentage error: " << r.max_percentage_err << "%\n";
         }
         return 0;
     }
@@ -65,7 +66,7 @@ int main(int argc, char* argv[]) {
             return 0;
         } else {
             std::cout << "Files DIFFER: " << r.n_different_lines
-                    << " lines differ, max percentage error: " << r.max_percentage_err << "%\n";
+                      << " lines differ, max percentage error: " << r.max_percentage_err << "%\n";
         }
         return 0;
     }
