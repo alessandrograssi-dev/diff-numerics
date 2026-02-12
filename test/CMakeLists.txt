@@ -21,6 +21,9 @@ enable_testing()
 add_executable(diff-numerics-tests
     ${CMAKE_SOURCE_DIR}/test/test-diff-numerics.cpp
     ${CMAKE_SOURCE_DIR}/src/NumericDiff.cpp
+    ${CMAKE_SOURCE_DIR}/src/Formatter.cpp
+    ${CMAKE_SOURCE_DIR}/src/Printer.cpp
+    ${CMAKE_SOURCE_DIR}/src/TextParser.cpp
 )
 target_include_directories(diff-numerics-tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(diff-numerics-tests gtest_main)

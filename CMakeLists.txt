@@ -32,6 +32,9 @@ set(SOURCES
     src/main.cpp
     src/ArgParser.cpp
     src/NumericDiff.cpp
+    src/Formatter.cpp
+    src/Printer.cpp
+    src/TextParser.cpp
 )
 
 # Set project version
