@@ -12,13 +12,15 @@
 // -------------------------------------------------------------
 
 #include "NumericDiff.hpp"
-#include "NumericDiffOption.hpp"
-#include <iostream>
-#include <fstream>
-#include <vector>
+
 #include <algorithm>
-#include <iomanip> // For std::setw
+#include <fstream>
+#include <iomanip>  // For std::setw
+#include <iostream>
 #include <set>
+#include <vector>
+
+#include "NumericDiffOption.hpp"
 
 // Constructor: initialize from options struct
 NumericDiff::NumericDiff(const NumericDiffOption& opts)
@@ -54,7 +56,7 @@ int NumericDiff::run() {
         fileProblem = true;
     }
     if (fileProblem) {
-        return -1; // Error code for file access issues
+        return -1;  // Error code for file access issues
     }
 
     // Check if files can be opened
@@ -67,8 +69,8 @@ int NumericDiff::run() {
         std::cerr << "Error: Cannot open file '" << file2_ << "'\n";
         fileProblem = true;
     }
-    if (fileProblem) {  
-        return -1; // Error code for file access issues
+    if (fileProblem) {
+        return -1;  // Error code for file access issues
     }
 
     std::string line1, line2;
@@ -109,14 +111,16 @@ int NumericDiff::run() {
     }
 
     if (quiet_) {
-        // Print nothing if files are equal, otherwise print as normal (with all options except quiet)
+        // Print nothing if files are equal, otherwise print as normal (with all options except
+        // quiet)
         if (diff_lines_ == 0) {
             return 0;
         } else {
             // Print summary as in only_equal_ mode
             std::cout << "Comparing " << file1_ << " and " << file2_ << "\n";
             std::cout << "Tolerance: " << tol_ << ", Threshold: " << threshold_ << "\n";
-            std::cout << "Files DIFFER: " << diff_lines_ << " lines differ, max percentage error: " << max_percentage_error_ << "%\n";
+            std::cout << "Files DIFFER: " << diff_lines_
+                      << " lines differ, max percentage error: " << max_percentage_error_ << "%\n";
         }
         return static_cast<int>(diff_lines_);
     }
@@ -128,7 +132,8 @@ int NumericDiff::run() {
             std::cout << "Files are EQUAL within tolerance.\n";
             return 0;
         } else {
-            std::cout << "Files DIFFER: " << diff_lines_ << " lines differ, max percentage error: " << max_percentage_error_ << "%\n";
+            std::cout << "Files DIFFER: " << diff_lines_
+                      << " lines differ, max percentage error: " << max_percentage_error_ << "%\n";
         }
     }
     return static_cast<int>(diff_lines_);
@@ -164,7 +169,8 @@ static std::vector<std::string> tokenize(const std::string& line) {
 }
 
 // Helper: calculate column widths for side-by-side output
-static std::vector<size_t> calc_col_widths(const std::vector<std::string>& t1, const std::vector<std::string>& t2) {
+static std::vector<size_t> calc_col_widths(const std::vector<std::string>& t1,
+                                           const std::vector<std::string>& t2) {
     size_t n = std::min(t1.size(), t2.size());
     std::vector<size_t> col_widths(n, 0);
     for (size_t i = 0; i < n; ++i) {
@@ -213,7 +219,8 @@ void NumericDiff::compareLine(const std::string& line1, const std::string& line2
                 output2.push_back(t2);
                 is_diff.push_back(true);
                 std::ostringstream oss;
-                oss << std::setw(static_cast<int>(col_widths[i])) << std::setfill(' ') << std::right << diff << "%";
+                oss << std::setw(static_cast<int>(col_widths[i])) << std::setfill(' ') << std::right
+                    << diff << "%";
                 errors.push_back(oss.str());
             } else {
                 output1.push_back(tokens1[i]);
@@ -269,8 +276,13 @@ void NumericDiff::compareLine(const std::string& line1, const std::string& line2
 }
 
 // New helper: print tokens side by side, column by column, with color and padding
-void NumericDiff::printSideBySideTokens(const std::vector<std::string>& tokens1, const std::vector<std::string>& tokens2, const std::vector<size_t>& col_widths) const {
-    // Print tokens side by side, aligning columns. Never truncate or cut numeric values: if a value is longer than the max column width, the column expands to fit the value. The max column width only limits padding/alignment, not the content of the numbers. ANSI color codes are ignored for width calculations.
+void NumericDiff::printSideBySideTokens(const std::vector<std::string>& tokens1,
+                                        const std::vector<std::string>& tokens2,
+                                        const std::vector<size_t>& col_widths) const {
+    // Print tokens side by side, aligning columns. Never truncate or cut numeric values: if a value
+    // is longer than the max column width, the column expands to fit the value. The max column
+    // width only limits padding/alignment, not the content of the numbers. ANSI color codes are
+    // ignored for width calculations.
     std::ostringstream oss1, oss2;
     size_t ncols = std::max(tokens1.size(), tokens2.size());
     for (size_t i = 0; i < ncols; ++i) {
@@ -283,12 +295,10 @@ void NumericDiff::printSideBySideTokens(const std::vector<std::string>& tokens1,
         colw = std::max({colw, t1_stripped.size(), t2_stripped.size()});
         // Print first token, padded
         oss1 << t1;
-        if (t1_stripped.size() < colw)
-            oss1 << std::string(colw - t1_stripped.size(), ' ');
+        if (t1_stripped.size() < colw) oss1 << std::string(colw - t1_stripped.size(), ' ');
         // Print second token, padded
         oss2 << t2;
-        if (t2_stripped.size() < colw)
-            oss2 << std::string(colw - t2_stripped.size(), ' ');
+        if (t2_stripped.size() < colw) oss2 << std::string(colw - t2_stripped.size(), ' ');
         if (i + 1 < ncols) {
             oss1 << " ";
             oss2 << " ";
@@ -297,7 +307,8 @@ void NumericDiff::printSideBySideTokens(const std::vector<std::string>& tokens1,
     std::string l1 = oss1.str();
     std::string l2 = oss2.str();
     // Decide separator: if either line has red color, use |, else use spaces
-    bool has_red = (l1.find("\033[31m") != std::string::npos) || (l2.find("\033[31m") != std::string::npos);
+    bool has_red =
+        (l1.find("\033[31m") != std::string::npos) || (l2.find("\033[31m") != std::string::npos);
     const char* sep = has_red ? "   |   " : "       ";
     l1 = extractVisiblePrefix(l1, static_cast<size_t>(line_length_));
     l2 = extractVisiblePrefix(l2, static_cast<size_t>(line_length_));
@@ -309,15 +320,16 @@ double NumericDiff::percentageDifference(double value1, double value2) const {
     if (std::abs(value1) < threshold_ && std::abs(value2) < threshold_) {
         return 0.0;
     }
-    if ((std::abs(value1) < threshold_ && std::abs(value2) >= threshold_) || 
+    if ((std::abs(value1) < threshold_ && std::abs(value2) >= threshold_) ||
         (std::abs(value2) < threshold_ && std::abs(value1) >= threshold_)) {
-        return 1.E99; // One value is below threshold, the other is not
+        return 1.E99;  // One value is below threshold, the other is not
     }
-    double percentage_diff = std::abs(value1 - value2) / std::max(std::abs(value1), std::abs(value2)) * 100.0;
+    double percentage_diff =
+        std::abs(value1 - value2) / std::max(std::abs(value1), std::abs(value2)) * 100.0;
     if (percentage_diff < tol_) {
-        return 0.0; // Values are within tolerance
+        return 0.0;  // Values are within tolerance
     }
-    return percentage_diff; // Return the percentage difference
+    return percentage_diff;  // Return the percentage difference
 }
 
 // Helper to strip ANSI escape codes (color codes) from a string
@@ -372,7 +384,8 @@ std::string NumericDiff::extractVisiblePrefix(const std::string& input, size_t n
 }
 
 // Print differences in a diff-like format
-void NumericDiff::printDiff(const std::string& output1, const std::string& output2, const std::string& errors) const {
+void NumericDiff::printDiff(const std::string& output1, const std::string& output2,
+                            const std::string& errors) const {
     // Only print lines that contain red marks (i.e., differences)
     bool has_red1 = output1.find("\033[31m") != std::string::npos;
     bool has_red2 = output2.find("\033[31m") != std::string::npos;
@@ -392,7 +405,8 @@ void NumericDiff::ensureAnsiReset(std::string& str) const {
     const std::string reset = "\033[0m";
     size_t last_red = str.rfind(red_start);
     size_t last_reset = str.rfind(reset);
-    if (last_red != std::string::npos && (last_reset == std::string::npos || last_reset < last_red)) {
+    if (last_red != std::string::npos &&
+        (last_reset == std::string::npos || last_reset < last_red)) {
         str += reset;
     }
 }

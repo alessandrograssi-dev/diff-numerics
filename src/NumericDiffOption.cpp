@@ -1,5 +1,6 @@
 // NumericDiffOption.cpp
 #include "NumericDiffOption.hpp"
+
 #include <iostream>
 #include <sstream>
 
@@ -8,7 +9,8 @@ const std::string NumericDiffOption::usage =
     "Usage: numeric-diff [options] file1 file2\n"
     "Options:\n"
     "  -y,  --side-by-side             Show files side by side (default: off)\n"
-    "  -ys, --suppress-common-lines    Suppress lines that are the same (implies side-by-side, default: off)\n"
+    "  -ys, --suppress-common-lines    Suppress lines that are the same (implies side-by-side, "
+    "default: off)\n"
     "  -t,  --tolerance <value>        Set tolerance for numeric comparison (default: 1e-2)\n"
     "  -T,  --threshold <value>        Set threshold for reporting differences (default: 1e-6)\n"
     "  -c,  --comment-string <char>    Set comment character (default: #)\n"
@@ -16,7 +18,8 @@ const std::string NumericDiffOption::usage =
     "  -s,  --report-identical-files   Only show equal lines (default: off)\n"
     "  -q,  --quiet                    Suppress output (default: off)\n"
     "  -d,  --color-different-digits   Color differing digits (default: off)\n"
-    "  -C,  --columns <list>           Compare only specified columns (comma-separated, 1-based, default: all)\n"
+    "  -C,  --columns <list>           Compare only specified columns (comma-separated, 1-based, "
+    "default: all)\n"
     "  -v,  --version                  Show program version and exit\n"
     "  -h,  --help                     Show this help message\n";
 
@@ -29,13 +32,16 @@ void NumericDiffOption::print_usage() {
     std::cout << usage << std::endl;
 }
 
-bool NumericDiffOption::parse_columns(const std::string& col_arg, std::set<size_t>& columns_to_compare, const std::string& usage) {
+bool NumericDiffOption::parse_columns(const std::string& col_arg,
+                                      std::set<size_t>& columns_to_compare,
+                                      const std::string& usage) {
     std::stringstream ss(col_arg);
     std::string col;
     while (std::getline(ss, col, ',')) {
         size_t col_num = std::stoul(col);
         if (col_num < 1) {
-            std::cerr << "Error: Column numbers must be at least 1 (got " << col_num << ").\n" << usage;
+            std::cerr << "Error: Column numbers must be at least 1 (got " << col_num << ").\n"
+                      << usage;
             return false;
         }
         columns_to_compare.insert(col_num);
@@ -120,15 +126,21 @@ bool NumericDiffOption::validate_options() const {
     const double min_tol = 1e-15, max_tol = 1e+3;
     const double min_threshold = 0.0, max_threshold = 1e+3;
     if (line_length < min_col_width || line_length > max_col_width) {
-        std::cerr << "Error: Column width (" << line_length << ") must be between " << min_col_width << " and " << max_col_width << ".\n" << usage;
+        std::cerr << "Error: Column width (" << line_length << ") must be between " << min_col_width
+                  << " and " << max_col_width << ".\n"
+                  << usage;
         return false;
     }
     if (tolerance < min_tol || tolerance > max_tol) {
-        std::cerr << "Error: Tolerance (" << tolerance << ") must be between " << min_tol << " and " << max_tol << ".\n" << usage;
+        std::cerr << "Error: Tolerance (" << tolerance << ") must be between " << min_tol << " and "
+                  << max_tol << ".\n"
+                  << usage;
         return false;
     }
     if (threshold < min_threshold || threshold > max_threshold) {
-        std::cerr << "Error: Threshold (" << threshold << ") must be between " << min_threshold << " and " << max_threshold << ".\n" << usage;
+        std::cerr << "Error: Threshold (" << threshold << ") must be between " << min_threshold
+                  << " and " << max_threshold << ".\n"
+                  << usage;
         return false;
     }
     return true;

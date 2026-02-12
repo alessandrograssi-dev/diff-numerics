@@ -11,16 +11,18 @@
 #include <set>
 #include <string>
 #include <vector>
+
 #include "NumericDiffOption.hpp"
 
 class NumericDiff {
-public:
+   public:
     // Constructor: set up comparison options and file paths
     explicit NumericDiff(const NumericDiffOption& opts);
-    // Run the comparison and print results according to options and returns the number of differing lines or 
-    // -1 if an error occurred (e.g., file not found)
+    // Run the comparison and print results according to options and returns the number of differing
+    // lines or -1 if an error occurred (e.g., file not found)
     int run();
-private:
+
+   private:
     // File paths and options
     std::string file1_;
     std::string file2_;
@@ -29,13 +31,15 @@ private:
     bool side_by_side_;
     std::string comment_char_;
     int line_length_;
-    // suppress_common_lines_ only suppresses common lines if explicitly set (not by -y/side_by_side alone)
+    // suppress_common_lines_ only suppresses common lines if explicitly set (not by -y/side_by_side
+    // alone)
     bool suppress_common_lines_;
     bool only_equal_;
     bool quiet_;
     bool color_diff_digits_ = false;
     std::set<size_t> columns_to_compare_;
-private:
+
+   private:
     // Helper: count columns in a file
     uint filesColumns(const std::string& file) const;
     // Helper: check if a line is a comment
@@ -63,13 +67,19 @@ private:
     // Compare two values (not used directly)
     void compareValues(double value1, double value2) const;
     // Print diff output in various formats
-    void printDiff(const std::string& line1, const std::string& line2, const std::string& errors) const;
-    // Print side-by-side tokens, aligning columns. Never truncate or cut numeric values: if a value is longer than the max column width, the column expands to fit the value. The max column width only limits padding/alignment, not the content of the numbers. ANSI color codes are ignored for width calculations.
-    void printSideBySideTokens(const std::vector<std::string>& tokens1, const std::vector<std::string>& tokens2, const std::vector<size_t>& col_widths) const;
+    void printDiff(const std::string& line1, const std::string& line2,
+                   const std::string& errors) const;
+    // Print side-by-side tokens, aligning columns. Never truncate or cut numeric values: if a value
+    // is longer than the max column width, the column expands to fit the value. The max column
+    // width only limits padding/alignment, not the content of the numbers. ANSI color codes are
+    // ignored for width calculations.
+    void printSideBySideTokens(const std::vector<std::string>& tokens1,
+                               const std::vector<std::string>& tokens2,
+                               const std::vector<size_t>& col_widths) const;
     // Print a string in red (for errors)
     inline void printRed(std::string& str) const {
         // Placeholder for red text output, e.g., using ANSI escape codes
-        str = "\033[31m" + str + "\033[0m"; // Red color
+        str = "\033[31m" + str + "\033[0m";  // Red color
     }
     // Remove ANSI color codes from a string
     std::string stripAnsi(const std::string& input) const;

@@ -1,10 +1,10 @@
 // NumericDiffOption.h
 #pragma once
-#include <string>
 #include <set>
+#include <string>
 
 class NumericDiffOption {
-public:
+   public:
     // Option values
     bool side_by_side = false;
     double tolerance = 1E-2;
@@ -21,7 +21,8 @@ public:
     NumericDiffOption() = default;
     bool parse_args(int argc, char* argv[]);
     bool validate_options() const;
-    static bool parse_columns(const std::string& col_arg, std::set<size_t>& columns_to_compare, const std::string& usage);
+    static bool parse_columns(const std::string& col_arg, std::set<size_t>& columns_to_compare,
+                              const std::string& usage);
     static const std::string usage;
     static void print_usage();
 
