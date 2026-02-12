@@ -30,7 +30,7 @@ include_directories(include)
 # Gather source and header files
 set(SOURCES 
     src/main.cpp
-    src/NumericDiffOption.cpp
+    src/ArgParser.cpp
     src/NumericDiff.cpp
 )
 
